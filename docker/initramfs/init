@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# For the source of this init script, see
+# https://stackoverflow.com/questions/36529881/qemu-bin-sh-cant-access-tty-job-control-turned-off
+
+mount -t proc none /proc
+mount -t sysfs none /sys
+mknod -m 666 /dev/ttyS0 c 4 64
+
+echo -e "\nboot took $(cut -d' ' -f1 /proc/uptime) seconds\n"
+setsid  cttyhack sh
+exec /bin/sh
