@@ -1,0 +1,2 @@
+# Ignore the bin directory if it exists.
+bin
