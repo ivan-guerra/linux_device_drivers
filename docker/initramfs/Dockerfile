@@ -19,12 +19,9 @@ RUN apt-get update     &&\
         vim-tiny         \
         curl
 
-# Users can tweak the following variables by passing their values as build args
-# to 'docker build'.
-ARG ROOT_DIR="/kdev/"
-ARG INITRAMFS_AR="initramfs-busybox-x86.cpio.gz"
-ARG BUSYBOX_VER="1.32.1"
-
+ENV ROOT_DIR="/kdev/"
+ENV INITRAMFS_AR="initramfs-busybox-x86.cpio.gz"
+ENV BUSYBOX_VER="1.32.1"
 ENV OBJ_DIR=$ROOT_DIR/obj
 ENV INITRAMFS_DIR=$ROOT_DIR/initramfs/x86-busybox
 
