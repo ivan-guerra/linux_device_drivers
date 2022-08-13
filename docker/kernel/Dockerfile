@@ -40,3 +40,5 @@ RUN chown $USER:$USER $USER_HOME/kbuild.sh &&\
 
 USER $USER
 WORKDIR $USER_HOME
+
+CMD ["/bin/bash", "-c", "./kbuild.sh"]
