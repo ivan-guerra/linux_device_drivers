@@ -17,5 +17,14 @@ LINUX_KDEV_SCRIPTS_PATH="${LINUX_KDEV_PROJECT_PATH}/scripts"
 # initramfs docker context path.
 LINUX_KDEV_DOCKER_INITRAMFS_PATH="${LINUX_KDEV_PROJECT_PATH}/docker/initramfs"
 
+# Kernel docker context path.
+LINUX_KDEV_DOCKER_KERNEL_PATH="${LINUX_KDEV_PROJECT_PATH}/docker/kernel"
+
+# Linux kernel source tree directory.
+LINUX_KDEV_KERNEL_SRC_PATH="${LINUX_KDEV_PROJECT_PATH}/linux"
+
 # Binary directory.
 LINUX_KDEV_BIN_DIR="${LINUX_KDEV_PROJECT_PATH}/bin"
+
+# Linux kernel build files.
+LINUX_KDEV_KERNEL_OBJ_PATH="${LINUX_KDEV_BIN_DIR}/obj"
