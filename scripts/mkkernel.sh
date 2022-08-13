@@ -11,7 +11,7 @@ CreateKernelImage()
     # We create a temporary kernel 'builder' image that compiles the Linux
     # kernel. The kernel bzImage is extracted from the temporary image and
     # placed in $LINUX_KDEV_BIN_DIR.
-    pushd $LINUX_KDEV_DOCKER_KERNEL_PATH
+    pushd $LINUX_KDEV_DOCKER_KERNEL_BUILD_PATH
         docker build \
             --build-arg USER_ID=$(id -u) \
             --build-arg GROUP_ID=$(id -g) \
