@@ -3,7 +3,6 @@
 
 FROM debian:10.8-slim
 
-# Install the minimum set of tools needed to build busybox.
 RUN apt-get update     &&\
     apt-get install -y   \
         bc               \
