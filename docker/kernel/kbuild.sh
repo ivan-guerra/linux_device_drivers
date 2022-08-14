@@ -1,13 +1,10 @@
 #!/bin/bash
 
 # kbuild.sh looks to see if BUILD_CONFIG is defined, if so the kernel config is
-# built otherwise the kernel sources are built.
+# built, otherwise, the kernel sources are built.
 
-# Note, the following variables are sourced from the environment and must be
-# specified in the docker run command:
-#   KERNEL_SRC_DIR
-#   OBJ_DIR
-#   BUILD_CONFIG
+KERNEL_SRC_DIR=$HOME/dev/linux_driver_dev/linux
+OBJ_DIR=$HOME/dev/linux_driver_dev/bin/obj
 
 ConfigKernel()
 {
@@ -27,8 +24,11 @@ BuildKernel()
 
 Main()
 {
-    mkdir -p $OBJ_DIR
+    mkdir -p KERNEL_SRC_DIR
+    mkdir -p OBJ_DIR
 
+    # Note, BUILD_CONFIG is sourced from the environment and must be specified
+    # in the docker run command.
     if [ -z $BUILD_CONFIG ]
     then
         BuildKernel

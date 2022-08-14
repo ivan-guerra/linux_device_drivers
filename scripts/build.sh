@@ -48,17 +48,17 @@ MakeKernelConfig()
 {
     pushd $LINUX_KDEV_DOCKER_KERNEL_PATH
         docker build \
+            --build-arg USER=$USER \
+            --build-arg HOME=$HOME \
             --build-arg USER_ID=$(id -u) \
             --build-arg GROUP_ID=$(id -g) \
             -t kconfig:latest .
 
         BUILDER_NAME="kernel-configurator"
         docker run -it --rm --name $BUILDER_NAME \
-            -e KERNEL_SRC_DIR=$1 \
-            -e OBJ_DIR=$2 \
             -e BUILD_CONFIG=1 \
-            -v $LINUX_KDEV_KERNEL_SRC_PATH:$KDEV_SRC:rw \
-            -v $LINUX_KDEV_KERNEL_OBJ_PATH:$KDEV_OBJ:rw \
+            -v $LINUX_KDEV_KERNEL_SRC_PATH:$LINUX_KDEV_KERNEL_SRC_PATH:rw \
+            -v $LINUX_KDEV_KERNEL_OBJ_PATH:$LINUX_KDEV_KERNEL_OBJ_PATH:rw \
             kconfig:latest
     popd
 
@@ -80,19 +80,19 @@ MakeKernelImage()
     # placed in $LINUX_KDEV_BIN_DIR.
     pushd $LINUX_KDEV_DOCKER_KERNEL_PATH
         docker build \
+            --build-arg USER=$USER \
+            --build-arg HOME=$HOME \
             --build-arg USER_ID=$(id -u) \
             --build-arg GROUP_ID=$(id -g) \
             -t kbuild:latest .
 
         BUILDER_NAME="kernel-builder"
         docker run -it --name $BUILDER_NAME \
-            -e KERNEL_SRC_DIR=$1 \
-            -e OBJ_DIR=$2 \
-            -v $LINUX_KDEV_KERNEL_SRC_PATH:$KDEV_SRC:rw \
-            -v $LINUX_KDEV_KERNEL_OBJ_PATH:$KDEV_OBJ:rw \
+            -v $LINUX_KDEV_KERNEL_SRC_PATH:$LINUX_KDEV_KERNEL_SRC_PATH:rw \
+            -v $LINUX_KDEV_KERNEL_OBJ_PATH:$LINUX_KDEV_KERNEL_OBJ_PATH:rw \
             kbuild:latest
         docker cp -L \
-            $BUILDER_NAME:$KDEV_OBJ/arch/x86_64/boot/bzImage $LINUX_KDEV_BIN_DIR
+            $BUILDER_NAME:$LINUX_KDEV_KERNEL_OBJ_PATH/arch/x86_64/boot/bzImage $LINUX_KDEV_BIN_DIR
         docker rm -f $BUILDER_NAME
     popd
 
@@ -125,13 +125,10 @@ Main()
         MakeInitramfs
     fi
 
-    KDEV_SRC="/home/kdev/linux"
-    KDEV_OBJ="/home/kdev/build/linux-x86-basic"
-
     if [ ! -f "${LINUX_KDEV_KERNEL_OBJ_PATH}/.config" ]
     then
         # Missing kernel config, create one.
-        MakeKernelConfig $KDEV_SRC $KDEV_OBJ
+        MakeKernelConfig
     else
         # A .config already exists. Prompt the User in case they want to
         # create a new config with this build.
@@ -139,12 +136,12 @@ Main()
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]
         then
-            MakeKernelConfig $KDEV_SRC $KDEV_OBJ
+            MakeKernelConfig
         fi
     fi
 
     # Generate the kernel bzImage.
-    MakeKernelImage $KDEV_SRC $KDEV_OBJ
+    MakeKernelImage
 }
 
 Main
