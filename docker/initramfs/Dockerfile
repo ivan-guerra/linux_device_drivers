@@ -3,21 +3,7 @@
 # advice given in this 2021 blog post:
 # https://mgalgs.io/2021/03/23/how-to-build-a-custom-linux-kernel-for-qemu-using-docker.html
 
-FROM debian:10.8-slim
-
-# Install the minimum set of tools needed to build busybox.
-RUN apt-get update     &&\
-    apt-get install -y   \
-        bc               \
-        bison            \
-        build-essential  \
-        cpio             \
-        flex             \
-        libelf-dev       \
-        libncurses-dev   \
-        libssl-dev       \
-        vim-tiny         \
-        curl
+FROM kbase:latest
 
 ENV ROOT_DIR="/kdev/"
 ENV INITRAMFS_AR="initramfs-busybox-x86.cpio.gz"

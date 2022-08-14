@@ -7,6 +7,13 @@
 # Source global project configurations.
 source config.sh
 
+MakeCommonBaseImage()
+{
+    pushd $LINUX_KDEV_DOCKER_COMMON_PATH
+        docker build -t kbase:latest .
+    popd
+}
+
 MakeInitramfs()
 {
     # We create a temporary initramfs 'builder' image that compiles a crude
@@ -101,6 +108,10 @@ MakeKernelImage()
 
 Main()
 {
+    # Build a common base image used by both the initramfs and kernel builder
+    # Docker images.
+    MakeCommonBaseImage
+
     # Create the kernel binary output directory if it does not already exist.
     # Caching the build objects on the host allows us to pass the obj dir
     # as a volume to the docker containers. This is handy for speeding up

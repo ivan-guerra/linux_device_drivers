@@ -1,21 +1,7 @@
 # Create a docker image that contains the tools needed to build the Linux
 # kernel.
 
-FROM debian:10.8-slim
-
-# Install the minimum set of tools needed to build the Linux kernel.
-RUN apt-get update     &&\
-    apt-get install -y   \
-        bc               \
-        bison            \
-        build-essential  \
-        cpio             \
-        flex             \
-        libelf-dev       \
-        libncurses-dev   \
-        libssl-dev       \
-        vim-tiny         \
-        curl
+FROM kbase:latest
 
 # When building the container the User has the option to specify a UID/GID
 # to be assigned to the image's default user. This comes in handy when sharing
