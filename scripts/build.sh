@@ -46,16 +46,17 @@ MakeInitramfs()
 
 MakeKernelConfig()
 {
-    pushd $LINUX_KDEV_DOCKER_KERNEL_CONFIG_PATH
+    pushd $LINUX_KDEV_DOCKER_KERNEL_PATH
         docker build \
             --build-arg USER_ID=$(id -u) \
             --build-arg GROUP_ID=$(id -g) \
             -t kconfig:latest .
 
-        KDEV_SRC="/home/kdev/linux"
-        KDEV_OBJ="/home/kdev/build/linux-x86-basic"
         BUILDER_NAME="kernel-configurator"
         docker run -it --rm --name $BUILDER_NAME \
+            -e KERNEL_SRC_DIR=$1 \
+            -e OBJ_DIR=$2 \
+            -e BUILD_CONFIG=1 \
             -v $LINUX_KDEV_KERNEL_SRC_PATH:$KDEV_SRC:rw \
             -v $LINUX_KDEV_KERNEL_OBJ_PATH:$KDEV_OBJ:rw \
             kconfig:latest
@@ -77,16 +78,16 @@ MakeKernelImage()
     # We create a temporary kernel 'builder' image that compiles the Linux
     # kernel. The kernel bzImage is extracted from the temporary image and
     # placed in $LINUX_KDEV_BIN_DIR.
-    pushd $LINUX_KDEV_DOCKER_KERNEL_BUILD_PATH
+    pushd $LINUX_KDEV_DOCKER_KERNEL_PATH
         docker build \
             --build-arg USER_ID=$(id -u) \
             --build-arg GROUP_ID=$(id -g) \
             -t kbuild:latest .
 
-        KDEV_SRC="/home/kdev/linux"
-        KDEV_OBJ="/home/kdev/build/linux-x86-basic"
         BUILDER_NAME="kernel-builder"
         docker run -it --name $BUILDER_NAME \
+            -e KERNEL_SRC_DIR=$1 \
+            -e OBJ_DIR=$2 \
             -v $LINUX_KDEV_KERNEL_SRC_PATH:$KDEV_SRC:rw \
             -v $LINUX_KDEV_KERNEL_OBJ_PATH:$KDEV_OBJ:rw \
             kbuild:latest
@@ -124,10 +125,13 @@ Main()
         MakeInitramfs
     fi
 
+    KDEV_SRC="/home/kdev/linux"
+    KDEV_OBJ="/home/kdev/build/linux-x86-basic"
+
     if [ ! -f "${LINUX_KDEV_KERNEL_OBJ_PATH}/.config" ]
     then
         # Missing kernel config, create one.
-        MakeKernelConfig
+        MakeKernelConfig $KDEV_SRC $KDEV_OBJ
     else
         # A .config already exists. Prompt the User in case they want to
         # create a new config with this build.
@@ -135,12 +139,12 @@ Main()
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]
         then
-            MakeKernelConfig
+            MakeKernelConfig $KDEV_SRC $KDEV_OBJ
         fi
     fi
 
     # Generate the kernel bzImage.
-    MakeKernelImage
+    MakeKernelImage $KDEV_SRC $KDEV_OBJ
 }
 
 Main

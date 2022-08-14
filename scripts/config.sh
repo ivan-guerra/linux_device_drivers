@@ -17,14 +17,11 @@ LINUX_KDEV_SCRIPTS_PATH="${LINUX_KDEV_PROJECT_PATH}/scripts"
 # initramfs docker context path.
 LINUX_KDEV_DOCKER_INITRAMFS_PATH="${LINUX_KDEV_PROJECT_PATH}/docker/initramfs"
 
+# Kernel config docker context path.
+LINUX_KDEV_DOCKER_KERNEL_PATH="${LINUX_KDEV_PROJECT_PATH}/docker/kernel"
+
 # Path to a common base image used by the initramfs and kernel Dockerfiles.
 LINUX_KDEV_DOCKER_COMMON_PATH="${LINUX_KDEV_PROJECT_PATH}/docker/common"
-
-# Kernel config docker context path.
-LINUX_KDEV_DOCKER_KERNEL_CONFIG_PATH="${LINUX_KDEV_PROJECT_PATH}/docker/kernel/config"
-
-# Kernel build docker context path.
-LINUX_KDEV_DOCKER_KERNEL_BUILD_PATH="${LINUX_KDEV_PROJECT_PATH}/docker/kernel/build"
 
 # Linux kernel source tree directory.
 LINUX_KDEV_KERNEL_SRC_PATH="${LINUX_KDEV_PROJECT_PATH}/linux"
