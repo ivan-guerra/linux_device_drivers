@@ -135,7 +135,7 @@ Main()
     else
         # A .config already exists. Prompt the User in case they want to
         # create a new config with this build.
-        read -p "Do you want to generate a new kernel .config? " -n 1 -r
+        read -p "Do you want to generate a new kernel .config? [y/n] " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]
         then
