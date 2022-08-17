@@ -1,40 +1,53 @@
 #!/bin/bash
 
-# kbuild.sh looks to see if BUILD_CONFIG is defined, if so the kernel config is
-# built, otherwise, the kernel sources are built.
-
-KERNEL_SRC_DIR=$HOME/dev/linux_driver_dev/linux
-OBJ_DIR=$HOME/dev/linux_driver_dev/bin/obj
+# kbuild.sh runs the series of command needed to configure and build the kernel
+# and any custom drivers in MODULE_SRC_DIR.
 
 ConfigKernel()
 {
     pushd $KERNEL_SRC_DIR
-        make O=$OBJ_DIR x86_64_defconfig &&\
-        make O=$OBJ_DIR kvm_guest.config &&\
-        make O=$OBJ_DIR nconfig
+        make O=$KERNEL_OBJ_DIR x86_64_defconfig &&\
+        make O=$KERNEL_OBJ_DIR kvm_guest.config &&\
+        make O=$KERNEL_OBJ_DIR nconfig
     popd
 }
 
 BuildKernel()
 {
     pushd $KERNEL_SRC_DIR
-        make O=$OBJ_DIR -j$(nproc)
+        make O=$KERNEL_OBJ_DIR -j$(nproc)
+    popd
+}
+
+BuildModules()
+{
+    pushd $MODULE_SRC_DIR
+        make O=$KERNEL_OBJ_DIR -j$(nproc) INSTALL_MOD_PATH=$KERNEL_OBJ_DIR modules
     popd
 }
 
 Main()
 {
-    mkdir -p KERNEL_SRC_DIR
-    mkdir -p OBJ_DIR
-
-    # Note, BUILD_CONFIG is sourced from the environment and must be specified
-    # in the docker run command.
-    if [ -z $BUILD_CONFIG ]
+    if [ ! -f "${KERNEL_OBJ_DIR}/.config" ]
     then
-        BuildKernel
-    else
+        # Missing kernel config, create one.
         ConfigKernel
+    else
+        # A .config already exists. Prompt the User in case they want to
+        # create a new config with this build.
+        read -p "Do you want to generate a new kernel .config? [y/n] " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]
+        then
+            ConfigKernel
+        fi
     fi
+
+    # Run an out of source build of the kernel.
+    BuildKernel
+
+    # Build custom modules.
+    BuildModules
 }
 
 Main

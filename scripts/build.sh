@@ -1,11 +1,23 @@
 #!/bin/bash
 
-# This script builds the initramfs and kernel bzImage with the added option to
-# configure the kernel. QEMU can use the initramfs and bzImage archives to
-# boot a VM for kernel debug and testing (see run.sh).
+# This script builds the initramfs and kernel bzImage.
+# QEMU can use the initramfs and bzImage archives to boot a VM for kernel
+# debug and testing (see run.sh).
 
 # Source global project configurations.
 source config.sh
+
+CheckInstall()
+{
+    if [ -f $1 ]
+    then
+        echo -e "${LGREEN}successfully created $1${NC}"
+    else
+        echo -e "${LRED}error failed to create $1, see the console log " \
+                "above for details${NC}"
+        exit 1
+    fi
+}
 
 MakeCommonBaseImage()
 {
@@ -33,44 +45,7 @@ MakeInitramfs()
         docker rm -f $BUILDER_NAME
     popd
 
-    if [ -f "${LINUX_KDEV_BIN_DIR}/${INITRAMFS_AR}" ]
-    then
-        echo -e "${LGREEN}${INITRAMFS_AR} successfully saved to " \
-                "${LINUX_KDEV_BIN_DIR}/${INITRAMFS_AR}${NC}"
-    else
-        echo -e "${LRED}error failed to create initramfs archive, see " \
-                "the console log above for details${NC}"
-        exit 1
-    fi
-}
-
-MakeKernelConfig()
-{
-    pushd $LINUX_KDEV_DOCKER_KERNEL_PATH
-        docker build \
-            --build-arg USER=$USER \
-            --build-arg HOME=$HOME \
-            --build-arg USER_ID=$(id -u) \
-            --build-arg GROUP_ID=$(id -g) \
-            -t kconfig:latest .
-
-        BUILDER_NAME="kernel-configurator"
-        docker run -it --rm --name $BUILDER_NAME \
-            -e BUILD_CONFIG=1 \
-            -v $LINUX_KDEV_KERNEL_SRC_PATH:$LINUX_KDEV_KERNEL_SRC_PATH:rw \
-            -v $LINUX_KDEV_KERNEL_OBJ_PATH:$LINUX_KDEV_KERNEL_OBJ_PATH:rw \
-            kconfig:latest
-    popd
-
-    if [ -f "${LINUX_KDEV_KERNEL_OBJ_PATH}/.config" ]
-    then
-        echo -e "${LGREEN}kernel config successfully saved to " \
-                "${LINUX_KDEV_KERNEL_OBJ_PATH}/.config${NC}"
-    else
-        echo -e "${LRED}error failed to create kernel config, see " \
-                "the console log above for details${NC}"
-        exit 1
-    fi
+    CheckInstall $LINUX_KDEV_BIN_DIR/$INITRAMFS_AR
 }
 
 MakeKernelImage()
@@ -88,23 +63,19 @@ MakeKernelImage()
 
         BUILDER_NAME="kernel-builder"
         docker run -it --name $BUILDER_NAME \
+            -e KERNEL_SRC_DIR=$LINUX_KDEV_KERNEL_SRC_PATH \
+            -e KERNEL_OBJ_DIR=$LINUX_KDEV_KERNEL_OBJ_PATH \
+            -e MODULE_SRC_DIR=$LINUX_KDEV_MODULE_SRC_PATH \
             -v $LINUX_KDEV_KERNEL_SRC_PATH:$LINUX_KDEV_KERNEL_SRC_PATH:rw \
             -v $LINUX_KDEV_KERNEL_OBJ_PATH:$LINUX_KDEV_KERNEL_OBJ_PATH:rw \
+            -v $LINUX_KDEV_MODULE_SRC_PATH:$LINUX_KDEV_MODULE_SRC_PATH:rw \
             kbuild:latest
         docker cp -L \
             $BUILDER_NAME:$LINUX_KDEV_KERNEL_OBJ_PATH/arch/x86_64/boot/bzImage $LINUX_KDEV_BIN_DIR
         docker rm -f $BUILDER_NAME
     popd
 
-    if [ -f "${LINUX_KDEV_BIN_DIR}/bzImage" ]
-    then
-        echo -e "${LGREEN}kernel bzImage successfully saved to " \
-                "${LINUX_KDEV_BIN_DIR}/bzImage${NC}"
-    else
-        echo -e "${LRED}error failed to create kernel bzImage, see " \
-                "the console log above for details${NC}"
-        exit 1
-    fi
+    CheckInstall $LINUX_KDEV_BIN_DIR/bzImage
 }
 
 Main()
@@ -119,29 +90,11 @@ Main()
     # builds because we don't build from scratch every time.
     mkdir -pv $LINUX_KDEV_KERNEL_OBJ_PATH
 
-    if [ ! -f "${LINUX_KDEV_BIN_DIR}/${INITRAMFS_AR}" ]
-    then
-        # We're missing an initramfs, create one.
-        MakeInitramfs
-    fi
-
-    if [ ! -f "${LINUX_KDEV_KERNEL_OBJ_PATH}/.config" ]
-    then
-        # Missing kernel config, create one.
-        MakeKernelConfig
-    else
-        # A .config already exists. Prompt the User in case they want to
-        # create a new config with this build.
-        read -p "Do you want to generate a new kernel .config? [y/n] " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]
-        then
-            MakeKernelConfig
-        fi
-    fi
-
     # Generate the kernel bzImage.
     MakeKernelImage
+
+    # Generate the initramfs.
+    MakeInitramfs
 }
 
 Main

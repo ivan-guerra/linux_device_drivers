@@ -26,6 +26,9 @@ LINUX_KDEV_DOCKER_COMMON_PATH="${LINUX_KDEV_PROJECT_PATH}/docker/common"
 # Linux kernel source tree directory.
 LINUX_KDEV_KERNEL_SRC_PATH="${LINUX_KDEV_PROJECT_PATH}/linux"
 
+# Driver module source path.
+LINUX_KDEV_MODULE_SRC_PATH="${LINUX_KDEV_PROJECT_PATH}/modules"
+
 # Binary directory.
 LINUX_KDEV_BIN_DIR="${LINUX_KDEV_PROJECT_PATH}/bin"
 
