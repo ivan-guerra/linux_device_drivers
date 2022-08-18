@@ -12,3 +12,8 @@ then
     echo -e "${LGREEN}Removing '$LINUX_KDEV_BIN_DIR'${NC}"
     rm -r $LINUX_KDEV_BIN_DIR
 fi
+
+# Remove module build artefacts.
+pushd $LINUX_KDEV_MODULE_SRC_PATH
+    make clean
+popd
