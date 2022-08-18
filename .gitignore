@@ -1,2 +1,12 @@
 # Ignore the bin directory if it exists.
 bin
+
+# Ignore module build artefacts. Note, these items can be automatically cleaned
+# by running scripts/clean.sh or running 'make clean' in the modules directory.
+modules/*/.*.cmd
+modules/*/*.dwo
+modules/*/*.ko
+modules/*/*.o
+modules/*/*.mod*
+modules/*/modules.order
+modules/*/Module.symvers
