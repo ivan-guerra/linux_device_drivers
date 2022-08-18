@@ -36,6 +36,9 @@ MakeInitramfs()
     # See docker/initramfs/Dockerfile for details.
     INITRAMFS_AR="initramfs-busybox-x86.cpio.gz"
 
+    # Add the module src/kernel objects to the initramfs Docker build context.
+    cp -r $LINUX_KDEV_MODULE_SRC_PATH $LINUX_KDEV_DOCKER_INITRAMFS_PATH
+
     pushd $LINUX_KDEV_DOCKER_INITRAMFS_PATH
         docker build -t kinitramfs:latest .
 
@@ -47,6 +50,9 @@ MakeInitramfs()
         docker cp $BUILDER_NAME:"/kdev/$INITRAMFS_AR" $LINUX_KDEV_BIN_DIR
         docker rm -f $BUILDER_NAME
     popd
+
+    # Remove module source from the initramfs Docker build context.
+    rm -r $LINUX_KDEV_DOCKER_INITRAMFS_PATH/$(basename $LINUX_KDEV_MODULE_SRC_PATH)
 
     CheckInstall $LINUX_KDEV_BIN_DIR/$INITRAMFS_AR
 }

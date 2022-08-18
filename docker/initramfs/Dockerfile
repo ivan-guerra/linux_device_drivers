@@ -38,6 +38,9 @@ RUN mkdir -pv $INITRAMFS_DIR &&\
 # The actual init script comes from the build context.
 COPY init $INITRAMFS_DIR
 
+# Add module kernel objects to the root of the filesystem.
+COPY modules $INITRAMFS_DIR/modules
+
 # Archive the initramfs.
 RUN cd $INITRAMFS_DIR &&\
     find . -print0 |\
