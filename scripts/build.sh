@@ -37,10 +37,13 @@ MakeInitramfs()
     INITRAMFS_AR="initramfs-busybox-x86.cpio.gz"
 
     pushd $LINUX_KDEV_DOCKER_INITRAMFS_PATH
-        docker build -t initramfs:latest .
+        docker build -t kinitramfs:latest .
 
         BUILDER_NAME="initramfs-builder"
-        docker create -it --name $BUILDER_NAME initramfs:latest bash
+        docker create -it --name $BUILDER_NAME \
+            -e CCACHE_DIR=/ccache \
+            -v $LINUX_KDEV_CCACHE_PATH:/ccache:rw \
+            kinitramfs:latest bash
         docker cp $BUILDER_NAME:"/kdev/$INITRAMFS_AR" $LINUX_KDEV_BIN_DIR
         docker rm -f $BUILDER_NAME
     popd
@@ -63,12 +66,14 @@ MakeKernelImage()
 
         BUILDER_NAME="kernel-builder"
         docker run -it --name $BUILDER_NAME \
+            -e CCACHE_DIR=/ccache \
             -e KERNEL_SRC_DIR=$LINUX_KDEV_KERNEL_SRC_PATH \
             -e KERNEL_OBJ_DIR=$LINUX_KDEV_KERNEL_OBJ_PATH \
             -e MODULE_SRC_DIR=$LINUX_KDEV_MODULE_SRC_PATH \
             -v $LINUX_KDEV_KERNEL_SRC_PATH:$LINUX_KDEV_KERNEL_SRC_PATH:rw \
             -v $LINUX_KDEV_KERNEL_OBJ_PATH:$LINUX_KDEV_KERNEL_OBJ_PATH:rw \
             -v $LINUX_KDEV_MODULE_SRC_PATH:$LINUX_KDEV_MODULE_SRC_PATH:rw \
+            -v $LINUX_KDEV_CCACHE_PATH:/ccache:rw \
             kbuild:latest
         docker cp -L \
             $BUILDER_NAME:$LINUX_KDEV_KERNEL_OBJ_PATH/arch/x86_64/boot/bzImage $LINUX_KDEV_BIN_DIR
@@ -89,6 +94,7 @@ Main()
     # as a volume to the docker containers. This is handy for speeding up
     # builds because we don't build from scratch every time.
     mkdir -pv $LINUX_KDEV_KERNEL_OBJ_PATH
+    mkdir -pv $LINUX_KDEV_CCACHE_PATH
 
     # Generate the kernel bzImage.
     MakeKernelImage

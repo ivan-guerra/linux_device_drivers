@@ -14,4 +14,8 @@ RUN apt-get update     &&\
         libncurses-dev   \
         libssl-dev       \
         vim-tiny         \
+        ccache           \
         curl
+
+# Use ccache (make it appear in path earlier than /usr/bin/gcc, etc.).
+RUN for p in gcc g++ cc c++; do ln -vs /usr/bin/ccache /usr/local/bin/$p; done

@@ -34,3 +34,6 @@ LINUX_KDEV_BIN_DIR="${LINUX_KDEV_PROJECT_PATH}/bin"
 
 # Linux kernel build files.
 LINUX_KDEV_KERNEL_OBJ_PATH="${LINUX_KDEV_BIN_DIR}/obj"
+
+# ccache path. Allows for re-use of the cache between container builds.
+LINUX_KDEV_CCACHE_PATH="${LINUX_KDEV_BIN_DIR}/ccache"
