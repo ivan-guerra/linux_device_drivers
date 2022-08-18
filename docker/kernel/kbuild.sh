@@ -22,32 +22,39 @@ BuildKernel()
 BuildModules()
 {
     pushd $MODULE_SRC_DIR
-        make O=$KERNEL_OBJ_DIR -j$(nproc) INSTALL_MOD_PATH=$KERNEL_OBJ_DIR modules
+        make O=$KERNEL_OBJ_DIR -j$(nproc) all
     popd
 }
 
 Main()
 {
-    if [ ! -f "${KERNEL_OBJ_DIR}/.config" ]
+    read -p "Build kernel? [y/n] " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]
     then
-        # Missing kernel config, create one.
-        ConfigKernel
-    else
-        # A .config already exists. Prompt the User in case they want to
-        # create a new config with this build.
-        read -p "Do you want to generate a new kernel .config? [y/n] " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]
+        if [ ! -f "${KERNEL_OBJ_DIR}/.config" ]
         then
+            # Missing kernel config, create one.
             ConfigKernel
+        else
+            # A .config already exists. Prompt the User in case they want to
+            # create a new config with this build.
+            read -p "Do you want to generate a new kernel .config? [y/n] " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]
+            then
+                ConfigKernel
+            fi
         fi
+        BuildKernel
     fi
 
-    # Run an out of source build of the kernel.
-    BuildKernel
-
-    # Build custom modules.
-    BuildModules
+    read -p "Build modules (assumes existing kernel build)? [y/n] " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        BuildModules
+    fi
 }
 
 Main
