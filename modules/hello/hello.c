@@ -3,15 +3,23 @@
  */
 #include <linux/init.h>
 #include <linux/module.h>
+#include <linux/moduleparam.h>
 MODULE_LICENSE("Dual BSD/GPL");
 
-static int hello_init(void)
+static char *whom = "world";
+static int howmany = 1;
+module_param(howmany, int, S_IRUGO);
+module_param(whom, charp, S_IRUGO);
+
+static __init int hello_init(void)
 {
-	printk(KERN_ALERT "Hello, world\n");
-	return 0;
+    for (int i = 0; i < howmany; ++i)
+        printk("Hello, %s\n", whom);
+
+    return 0;
 }
 
-static void hello_exit(void)
+static __exit void hello_exit(void)
 {
 	printk(KERN_ALERT "Goodbye, cruel world\n");
 }
