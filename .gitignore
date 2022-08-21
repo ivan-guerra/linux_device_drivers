@@ -10,3 +10,7 @@ modules/*/*.o
 modules/*/*.mod*
 modules/*/modules.order
 modules/*/Module.symvers
+
+# Ignore the cscope/ctags index files.
+cscope.*
+tags
