@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# usage: scull_unload
+# This script unloads scull devices previously loaded using the scull_load
+# script.
+
+module="scull"
+device="scull"
+
+# Invoke rmmod with all arguments we got.
+/sbin/rmmod $module $* || exit 1
+
+# Remove stale nodes.
+rm -f /dev/${device} /dev/${device}[0-3]
