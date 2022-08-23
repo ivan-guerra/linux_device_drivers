@@ -3,8 +3,21 @@
 # Makefile once again.
 # This conditional selects whether we are being included from the
 # kernel Makefile or not.
-ifeq ($(KERNELRELEASE),)
 
+# Comment/uncomment the following line to disable/enable debugging.
+DEBUG = y
+
+# Add your debugging flag (or not) to ccflags. For details see
+# linux/Documentation/kbuild/modules.rst
+ifeq ($(DEBUG),y)
+	DEBFLAGS = -O -g -DSCULL_DEBUG
+else
+	DEBFLAGS = -O2
+endif
+
+ccflags-y := $(DEBFLAGS)
+
+ifeq ($(KERNELRELEASE),)
 	# Set KERNELDIR to point to the kernel object directory.
     KERNELDIR ?= $(HOME)/dev/linux_driver_dev/bin/obj
     # The current directory is passed to sub-makes as argument
@@ -25,5 +38,3 @@ else
     # called from kernel build system: just declare what our modules are
     obj-m := scull.o
 endif
-
-
