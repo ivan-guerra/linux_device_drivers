@@ -5,6 +5,8 @@
 #include <linux/kernel.h>
 #include <linux/kdev_t.h>
 #include <linux/fs.h>
+#include <linux/proc_fs.h>
+#include <linux/seq_file.h>
 #include <linux/slab.h>
 #include <asm/uaccess.h>
 
@@ -27,6 +29,64 @@ module_param(scull_quantum, int, S_IRUGO);
 module_param(scull_qset, int, S_IRUGO);
 
 struct scull_dev *scull_devices; /* allocated in scull_init_module */
+
+#ifdef SCULL_DEBUG /* use proc only if debugging */
+
+/*
+ * The proc filesystem: function to read and entry
+ */
+static int scull_proc_show(struct seq_file *m, void *data)
+{
+    struct scull_dev *devices = m->private;
+
+	for (int i = 0; i < scull_nr_devs; i++) {
+		struct scull_dev *d = &devices[i];
+		struct scull_qset *qs = d->data;
+		if (down_interruptible(&d->sem))
+			return -ERESTARTSYS;
+		seq_printf(m, "\nDevice %i: qset %i, q %i, sz %li\n",
+                   i, d->qset, d->quantum, d->size);
+		for (; qs; qs = qs->next) { /* scan the list */
+			seq_printf(m, "  item at %px, qset at %px\n", qs, qs->data);
+			if (qs->data && !qs->next) /* dump only the last item */
+				for (int j = 0; j < d->qset; j++) {
+					if (qs->data[j])
+						seq_printf(m, "    % 4i: %8px\n", j, qs->data[j]);
+				}
+		}
+		up(&devices[i].sem);
+	}
+
+    return 0;
+}
+
+static int scull_proc_open(struct inode *inode, struct file *file)
+{
+    return single_open(file, scull_proc_show, scull_devices);
+}
+
+static const struct proc_ops scull_proc_fops = {
+    .proc_open = scull_proc_open,
+    .proc_read = seq_read,
+    .proc_lseek = seq_lseek,
+    .proc_release = single_release
+};
+
+/*
+ * Actually create (and remove) the /proc file(s).
+ */
+static void scull_create_proc(void)
+{
+	proc_create("scullmem", 0, NULL, &scull_proc_fops);
+}
+
+static void scull_remove_proc(void)
+{
+	/* no problem if it was not registered */
+	remove_proc_entry("scullmem", NULL /* parent dir */);
+}
+
+#endif
 
 /*
  * Empty out the scull device; must be called with the device
@@ -224,6 +284,10 @@ void scull_cleanup_module(void)
 		kfree(scull_devices);
 	}
 
+#ifdef SCULL_DEBUG /* use proc only if debugging */
+	scull_remove_proc();
+#endif
+
 	/* cleanup_module is never called if registering failed */
 	unregister_chrdev_region(devno, scull_nr_devs);
 }
@@ -287,6 +351,10 @@ int scull_init_module(void)
 
     /* At this point call the init function for any friend device */
 	dev = MKDEV(scull_major, scull_minor + scull_nr_devs);
+
+#ifdef SCULL_DEBUG /* only when debugging */
+	scull_create_proc();
+#endif
 
 	return 0; /* succeed */
 
