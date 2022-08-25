@@ -32,58 +32,84 @@ struct scull_dev *scull_devices; /* allocated in scull_init_module */
 
 #ifdef SCULL_DEBUG /* use proc only if debugging */
 
-/*
- * The proc filesystem: function to read and entry
- */
-static int scull_proc_show(struct seq_file *m, void *data)
+static void *scull_seq_start(struct seq_file *s, loff_t *pos)
 {
-    struct scull_dev *devices = m->private;
-
-	for (int i = 0; i < scull_nr_devs; i++) {
-		struct scull_dev *d = &devices[i];
-		struct scull_qset *qs = d->data;
-		if (down_interruptible(&d->sem))
-			return -ERESTARTSYS;
-		seq_printf(m, "\nDevice %i: qset %i, q %i, sz %li\n",
-                   i, d->qset, d->quantum, d->size);
-		for (; qs; qs = qs->next) { /* scan the list */
-			seq_printf(m, "  item at %px, qset at %px\n", qs, qs->data);
-			if (qs->data && !qs->next) /* dump only the last item */
-				for (int j = 0; j < d->qset; j++) {
-					if (qs->data[j])
-						seq_printf(m, "    % 4i: %8px\n", j, qs->data[j]);
-				}
-		}
-		up(&devices[i].sem);
-	}
-
-    return 0;
+    if (*pos >= scull_nr_devs)
+        return NULL;
+    return (scull_devices + *pos);
 }
+
+static void *scull_seq_next(struct seq_file *s, void *v, loff_t *pos)
+{
+    (*pos)++;
+    if (*pos >= scull_nr_devs)
+        return NULL;
+    return (scull_devices + *pos);
+}
+
+static void scull_seq_stop(struct seq_file *s, void *v)
+{
+    return;
+}
+
+static int scull_seq_show(struct seq_file *s, void *v)
+{
+	struct scull_dev *dev = (struct scull_dev *) v;
+	struct scull_qset *d;
+	int i;
+
+	if (down_interruptible(&dev->sem))
+		return -ERESTARTSYS;
+	seq_printf(s, "\nDevice %i: qset %i, q %i, sz %li\n",
+			(int) (dev - scull_devices), dev->qset,
+			dev->quantum, dev->size);
+	for (d = dev->data; d; d = d->next) { /* scan the list */
+		seq_printf(s, "  item at %p, qset at %p\n", d, d->data);
+		if (d->data && !d->next) /* dump only the last item */
+			for (i = 0; i < dev->qset; i++) {
+				if (d->data[i])
+					seq_printf(s, "    % 4i: %8p\n",
+							i, d->data[i]);
+			}
+	}
+	up(&dev->sem);
+	return 0;
+}
+
+static const struct seq_operations scull_seq_ops = {
+    .start = scull_seq_start,
+    .next = scull_seq_next,
+    .stop = scull_seq_stop,
+    .show = scull_seq_show
+};
 
 static int scull_proc_open(struct inode *inode, struct file *file)
 {
-    return single_open(file, scull_proc_show, scull_devices);
+    return seq_open(file, &scull_seq_ops);
 }
 
-static const struct proc_ops scull_proc_fops = {
+static const struct proc_ops scull_proc_ops = {
     .proc_open = scull_proc_open,
     .proc_read = seq_read,
     .proc_lseek = seq_lseek,
-    .proc_release = single_release
+    .proc_release = seq_release
 };
+
+/* proc entry pointer, see scull_create_proc() and scull_remove_proc(). */
+static struct proc_dir_entry *entry = NULL;
 
 /*
  * Actually create (and remove) the /proc file(s).
  */
 static void scull_create_proc(void)
 {
-	proc_create("scullmem", 0, NULL, &scull_proc_fops);
+    entry = proc_create("scullseq", 0, NULL, &scull_proc_ops);
 }
 
 static void scull_remove_proc(void)
 {
 	/* no problem if it was not registered */
-	remove_proc_entry("scullmem", NULL /* parent dir */);
+	proc_remove(entry);
 }
 
 #endif
