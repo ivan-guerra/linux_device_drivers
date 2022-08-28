@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# usage: faulty_unload
+# This script unloads a faulty device previously loaded using the faulty_load
+# script.
+
+module="faulty"
+device="faulty"
+
+# Invoke rmmod with all arguments we got.
+/sbin/rmmod $module $* || exit 1
+
+# Remove the faulty node.
+rm -f /dev/${device} /dev/${device}0
