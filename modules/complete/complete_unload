@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# usage: complete_unload
+# This script unloads a complete device previously loaded using the
+# complete_load script.
+
+module="complete"
+device="complete"
+
+# Invoke rmmod with all arguments we got.
+/sbin/rmmod $module $* || exit 1
+
+# Remove the complete node.
+rm -f /dev/${device} /dev/${device}0
