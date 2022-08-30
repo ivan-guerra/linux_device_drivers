@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# usage: sleepy_unload
+# This script unloads a sleepy device previously loaded using the sleepy_load
+# script.
+
+module="sleepy"
+device="sleepy"
+
+# Invoke rmmod with all arguments we got.
+/sbin/rmmod $module $* || exit 1
+
+# Remove the sleepy node.
+rm -f /dev/${device} /dev/${device}0
