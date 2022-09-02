@@ -49,7 +49,6 @@ MODULE_LICENSE("Dual BSD/GPL");
 
 static struct scull_pipe *scull_p_devices;
 
-static int scull_p_fasync(int fd, struct file *filp, int mode);
 static int spacefree(struct scull_pipe *dev);
 
 static int scull_p_open(struct inode *inode, struct file *filp)
@@ -236,7 +235,7 @@ static ssize_t scull_p_write(struct file *filp, const char __user *buf, size_t c
 //	return mask;
 //}
 
-static int scull_p_fasync(int fd, struct file *filp, int mode)
+int scull_p_fasync(int fd, struct file *filp, int mode)
 {
 	struct scull_pipe *dev = filp->private_data;
 
@@ -384,6 +383,7 @@ static struct file_operations scull_pipe_fops = {
 	.write          = scull_p_write,
 	.unlocked_ioctl = scull_p_ioctl,
     .poll           = scull_p_poll,
+    .fasync         = scull_p_fasync,
 	.open           = scull_p_open,
 	.release        = scull_p_release
 };

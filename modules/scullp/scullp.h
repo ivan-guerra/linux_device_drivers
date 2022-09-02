@@ -80,6 +80,7 @@ int scull_p_init(dev_t dev);
 void scull_p_cleanup(void);
 long scull_p_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
 __poll_t scull_p_poll(struct file *filp, struct poll_table_struct *wait);
+int scull_p_fasync(int fd, struct file *filp, int mode);
 
 /*
  * Ioctl definitions
