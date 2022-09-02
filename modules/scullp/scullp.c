@@ -364,6 +364,7 @@ static struct file_operations scull_pipe_fops = {
 	.unlocked_ioctl = scull_p_ioctl,
     .poll           = scull_p_poll,
     .fasync         = scull_p_fasync,
+    .llseek         = no_llseek,
 	.open           = scull_p_open,
 	.release        = scull_p_release
 };
