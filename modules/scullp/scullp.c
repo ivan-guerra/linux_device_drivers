@@ -356,11 +356,34 @@ long scull_p_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	return 0;
 }
 
-struct file_operations scull_pipe_fops = {
+__poll_t scull_p_poll(struct file *filp, struct poll_table_struct *wait)
+{
+	struct scull_pipe *dev = filp->private_data;
+	__poll_t mask = 0;
+
+	/*
+	 * The buffer is circular; it is considered full
+	 * if "wp" is right behind "rp" and empty if the
+	 * two are equal.
+	 */
+	down(&dev->sem);
+	poll_wait(filp, &dev->inq,  wait);
+	poll_wait(filp, &dev->outq, wait);
+	if (dev->rp != dev->wp)
+		mask |= POLLIN | POLLRDNORM;	/* readable */
+	if (spacefree(dev))
+		mask |= POLLOUT | POLLWRNORM;	/* writable */
+	up(&dev->sem);
+
+	return mask;
+}
+
+static struct file_operations scull_pipe_fops = {
 	.owner          = THIS_MODULE,
 	.read           = scull_p_read,
 	.write          = scull_p_write,
 	.unlocked_ioctl = scull_p_ioctl,
+    .poll           = scull_p_poll,
 	.open           = scull_p_open,
 	.release        = scull_p_release
 };
