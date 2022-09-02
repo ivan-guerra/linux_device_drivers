@@ -50,6 +50,7 @@ MODULE_LICENSE("Dual BSD/GPL");
 static struct scull_pipe *scull_p_devices;
 
 static int spacefree(struct scull_pipe *dev);
+static int scull_p_fasync(int fd, struct file *filp, int mode);
 
 static int scull_p_open(struct inode *inode, struct file *filp)
 {
@@ -214,28 +215,29 @@ static ssize_t scull_p_write(struct file *filp, const char __user *buf, size_t c
 	return count;
 }
 
-//static unsigned int scull_p_poll(struct file *filp, poll_table *wait)
-//{
-//	struct scull_pipe *dev = filp->private_data;
-//	unsigned int mask = 0;
-//
-//	/*
-//	 * The buffer is circular; it is considered full
-//	 * if "wp" is right behind "rp" and empty if the
-//	 * two are equal.
-//	 */
-//	down(&dev->sem);
-//	poll_wait(filp, &dev->inq,  wait);
-//	poll_wait(filp, &dev->outq, wait);
-//	if (dev->rp != dev->wp)
-//		mask |= POLLIN | POLLRDNORM;	/* readable */
-//	if (spacefree(dev))
-//		mask |= POLLOUT | POLLWRNORM;	/* writable */
-//	up(&dev->sem);
-//	return mask;
-//}
+static __poll_t scull_p_poll(struct file *filp, struct poll_table_struct *wait)
+{
+	struct scull_pipe *dev = filp->private_data;
+	__poll_t mask = 0;
 
-int scull_p_fasync(int fd, struct file *filp, int mode)
+	/*
+	 * The buffer is circular; it is considered full
+	 * if "wp" is right behind "rp" and empty if the
+	 * two are equal.
+	 */
+	down(&dev->sem);
+	poll_wait(filp, &dev->inq,  wait);
+	poll_wait(filp, &dev->outq, wait);
+	if (dev->rp != dev->wp)
+		mask |= POLLIN | POLLRDNORM;	/* readable */
+	if (spacefree(dev))
+		mask |= POLLOUT | POLLWRNORM;	/* writable */
+	up(&dev->sem);
+
+	return mask;
+}
+
+static int scull_p_fasync(int fd, struct file *filp, int mode)
 {
 	struct scull_pipe *dev = filp->private_data;
 
@@ -353,28 +355,6 @@ long scull_p_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	}
 
 	return 0;
-}
-
-__poll_t scull_p_poll(struct file *filp, struct poll_table_struct *wait)
-{
-	struct scull_pipe *dev = filp->private_data;
-	__poll_t mask = 0;
-
-	/*
-	 * The buffer is circular; it is considered full
-	 * if "wp" is right behind "rp" and empty if the
-	 * two are equal.
-	 */
-	down(&dev->sem);
-	poll_wait(filp, &dev->inq,  wait);
-	poll_wait(filp, &dev->outq, wait);
-	if (dev->rp != dev->wp)
-		mask |= POLLIN | POLLRDNORM;	/* readable */
-	if (spacefree(dev))
-		mask |= POLLOUT | POLLWRNORM;	/* writable */
-	up(&dev->sem);
-
-	return mask;
 }
 
 static struct file_operations scull_pipe_fops = {
