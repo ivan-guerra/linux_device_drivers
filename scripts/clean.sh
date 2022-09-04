@@ -7,13 +7,13 @@
 source config.sh
 
 # Remove the binary directory.
-if [ -d $LINUX_KDEV_BIN_DIR ]
+if [ -d $LDD3_BIN_DIR ]
 then
-    echo -e "${LGREEN}Removing '$LINUX_KDEV_BIN_DIR'${NC}"
-    rm -r $LINUX_KDEV_BIN_DIR
+    echo -e "${LGREEN}Removing '$LDD3_BIN_DIR'${NC}"
+    rm -r $LDD3_BIN_DIR
 fi
 
 # Remove module build artefacts.
-pushd $LINUX_KDEV_MODULE_SRC_PATH
+pushd $LDD3_MODULE_SRC_PATH
     make clean
 popd

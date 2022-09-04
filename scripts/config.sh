@@ -9,31 +9,31 @@ LRED='\033[1;31m'
 NC='\033[0m'
 
 # Root directory.
-LINUX_KDEV_PROJECT_PATH=$(dirname $(pwd))
+LDD3_PROJECT_PATH=$(dirname $(pwd))
 
 # Scripts directory.
-LINUX_KDEV_SCRIPTS_PATH="${LINUX_KDEV_PROJECT_PATH}/scripts"
+LDD3_SCRIPTS_PATH="${LDD3_PROJECT_PATH}/scripts"
 
 # initramfs docker context path.
-LINUX_KDEV_DOCKER_INITRAMFS_PATH="${LINUX_KDEV_PROJECT_PATH}/docker/initramfs"
+LDD3_DOCKER_INITRAMFS_PATH="${LDD3_PROJECT_PATH}/docker/initramfs"
 
 # Kernel config docker context path.
-LINUX_KDEV_DOCKER_KERNEL_PATH="${LINUX_KDEV_PROJECT_PATH}/docker/kernel"
+LDD3_DOCKER_KERNEL_PATH="${LDD3_PROJECT_PATH}/docker/kernel"
 
 # Path to a common base image used by the initramfs and kernel Dockerfiles.
-LINUX_KDEV_DOCKER_COMMON_PATH="${LINUX_KDEV_PROJECT_PATH}/docker/common"
+LDD3_DOCKER_COMMON_PATH="${LDD3_PROJECT_PATH}/docker/common"
 
 # Linux kernel source tree directory.
-LINUX_KDEV_KERNEL_SRC_PATH="${LINUX_KDEV_PROJECT_PATH}/linux"
+LDD3_KERNEL_SRC_PATH="${LDD3_PROJECT_PATH}/linux"
 
 # Driver module source path.
-LINUX_KDEV_MODULE_SRC_PATH="${LINUX_KDEV_PROJECT_PATH}/modules"
+LDD3_MODULE_SRC_PATH="${LDD3_PROJECT_PATH}/modules"
 
 # Binary directory.
-LINUX_KDEV_BIN_DIR="${LINUX_KDEV_PROJECT_PATH}/bin"
+LDD3_BIN_DIR="${LDD3_PROJECT_PATH}/bin"
 
 # Linux kernel build files.
-LINUX_KDEV_KERNEL_OBJ_PATH="${LINUX_KDEV_BIN_DIR}/obj"
+LDD3_KERNEL_OBJ_PATH="${LDD3_BIN_DIR}/obj"
 
 # ccache path. Allows for re-use of the cache between container builds.
-LINUX_KDEV_CCACHE_PATH="${LINUX_KDEV_BIN_DIR}/ccache"
+LDD3_CCACHE_PATH="${LDD3_BIN_DIR}/ccache"

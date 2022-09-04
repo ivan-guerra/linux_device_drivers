@@ -12,22 +12,22 @@ MakeCScopeFiles()
 
     # Create cscope.files for generic kernel sources and sources found under
     # arch/x86.
-    find $LINUX_KDEV_KERNEL_SRC_PATH                                       \
-         -path "$LINUX_KDEV_KERNEL_SRC_PATH/arch*"            -prune -o    \
-         -path "$LINUX_KDEV_KERNEL_SRC_PATH/tmp*"             -prune -o    \
-         -path "$LINUX_KDEV_KERNEL_SRC_PATH/Documentation*"   -prune -o    \
-         -path "$LINUX_KDEV_KERNEL_SRC_PATH/scripts*"         -prune -o    \
-         -path "$LINUX_KDEV_KERNEL_SRC_PATH/tools*"           -prune -o    \
-         -path "$LINUX_KDEV_KERNEL_SRC_PATH/include/config*"  -prune -o    \
-         -path "$LINUX_KDEV_KERNEL_SRC_PATH/usr/include*"     -prune -o    \
+    find $LDD3_KERNEL_SRC_PATH                                       \
+         -path "$LDD3_KERNEL_SRC_PATH/arch*"            -prune -o    \
+         -path "$LDD3_KERNEL_SRC_PATH/tmp*"             -prune -o    \
+         -path "$LDD3_KERNEL_SRC_PATH/Documentation*"   -prune -o    \
+         -path "$LDD3_KERNEL_SRC_PATH/scripts*"         -prune -o    \
+         -path "$LDD3_KERNEL_SRC_PATH/tools*"           -prune -o    \
+         -path "$LDD3_KERNEL_SRC_PATH/include/config*"  -prune -o    \
+         -path "$LDD3_KERNEL_SRC_PATH/usr/include*"     -prune -o    \
          -type f                                       \
          -not -name '*.mod.c'                          \
          -name "*.[chsS]" -print > cscope.files
-    find $LINUX_KDEV_KERNEL_SRC_PATH/arch/x86                              \
-         -path "$LINUX_KDEV_KERNEL_SRC_PATH/arch/x86/configs" -prune -o    \
-         -path "$LINUX_KDEV_KERNEL_SRC_PATH/arch/x86/kvm"     -prune -o    \
-         -path "$LINUX_KDEV_KERNEL_SRC_PATH/arch/x86/lguest"  -prune -o    \
-         -path "$LINUX_KDEV_KERNEL_SRC_PATH/arch/x86/xen"     -prune -o    \
+    find $LDD3_KERNEL_SRC_PATH/arch/x86                              \
+         -path "$LDD3_KERNEL_SRC_PATH/arch/x86/configs" -prune -o    \
+         -path "$LDD3_KERNEL_SRC_PATH/arch/x86/kvm"     -prune -o    \
+         -path "$LDD3_KERNEL_SRC_PATH/arch/x86/lguest"  -prune -o    \
+         -path "$LDD3_KERNEL_SRC_PATH/arch/x86/xen"     -prune -o    \
          -type f                                       \
          -not -name '*.mod.c'                          \
          -name "*.[chsS]" -print >> cscope.files
@@ -50,8 +50,8 @@ MakeCTags()
 InstallIndices()
 {
     # Move indices to the root of the project.
-    mv cscope.in.out cscope.out cscope.po.out $LINUX_KDEV_PROJECT_PATH
-    mv tags $LINUX_KDEV_PROJECT_PATH
+    mv cscope.in.out cscope.out cscope.po.out $LDD3_PROJECT_PATH
+    mv tags $LDD3_PROJECT_PATH
 }
 
 Main()

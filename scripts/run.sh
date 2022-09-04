@@ -23,8 +23,8 @@ RunDebugSession()
     echo -e "\t(gdb) target remote localhost:1234"
 
     qemu-system-x86_64 \
-        -kernel "${LINUX_KDEV_BIN_DIR}/bzImage" \
-        -initrd "${LINUX_KDEV_BIN_DIR}/initramfs-busybox-x86.cpio.gz" \
+        -kernel "${LDD3_BIN_DIR}/bzImage" \
+        -initrd "${LDD3_BIN_DIR}/initramfs-busybox-x86.cpio.gz" \
         -nographic \
         -append "console=ttyS0,115200 nokaslr" \
         -s \
@@ -35,8 +35,8 @@ RunDebugSession()
 RunNormalSession()
 {
     qemu-system-x86_64 \
-        -kernel "${LINUX_KDEV_BIN_DIR}/bzImage" \
-        -initrd "${LINUX_KDEV_BIN_DIR}/initramfs-busybox-x86.cpio.gz" \
+        -kernel "${LDD3_BIN_DIR}/bzImage" \
+        -initrd "${LDD3_BIN_DIR}/initramfs-busybox-x86.cpio.gz" \
         -nographic \
         -append "console=ttyS0,115200" \
         -enable-kvm
