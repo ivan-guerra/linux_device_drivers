@@ -1,43 +1,34 @@
 /*
- * scullp.c -- the scull pipe char module
+ * scullp.c - scull pipe char device implementation.
  *
- * Copyright (C) 2001 Alessandro Rubini and Jonathan Corbet
- * Copyright (C) 2001 O'Reilly & Associates
- *
- * The source code in this file can be freely used, adapted,
- * and redistributed in source or binary form, so long as an
- * acknowledgment appears in derived source files.  The citation
- * should list that the code comes from the book "Linux Device
- * Drivers" by Alessandro Rubini and Jonathan Corbet, published
- * by O'Reilly & Associates.   No warranty is attached;
- * we cannot take responsibility for errors or fitness for use.
+ * Credit - "Linux Device Drivers" by Alessandro Rubini and Jonathan Corbet,
+ * published by O'Reilly and Associates.
  */
-
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 
-#include <linux/kernel.h>	/* printk() */
-#include <linux/slab.h>		/* kmalloc() */
-#include <linux/fs.h>		/* everything... */
-#include <linux/errno.h>	/* error codes */
-#include <linux/types.h>	/* size_t */
+#include <linux/kernel.h> /* printk() */
+#include <linux/slab.h> /* kmalloc() */
+#include <linux/fs.h> /* everything... */
+#include <linux/errno.h> /* error codes */
+#include <linux/types.h> /* size_t */
 #include <linux/proc_fs.h>
 #include <linux/poll.h>
-#include <linux/fcntl.h>	/* O_ACCMODE */
+#include <linux/fcntl.h> /* O_ACCMODE */
 #include <linux/seq_file.h>
 #include <linux/cdev.h>
-#include <asm/uaccess.h>	/* copy_*_user */
+#include <asm/uaccess.h> /* copy_*_user */
 
 #include "scullp.h"
 
 /*
  * Our parameters which can be set at load time.
  */
-int scull_p_major    = SCULL_P_MAJOR;
-int scull_p_minor    = 0;
-int scull_p_nr_devs = SCULL_P_NR_DEVS;	/* number of bare scullp devices */
-int scull_p_buffer  = SCULL_P_BUFFER;	/* buffer size */
+int scull_p_major = SCULL_P_MAJOR;
+int scull_p_minor = 0;
+int scull_p_nr_devs = SCULL_P_NR_DEVS; /* number of bare scullp devices */
+int scull_p_buffer = SCULL_P_BUFFER; /* buffer size */
 
 module_param(scull_p_major, int, S_IRUGO);
 module_param(scull_p_minor, int, S_IRUGO);
@@ -96,7 +87,8 @@ static int scull_p_release(struct inode *inode, struct file *filp)
 		dev->nwriters--;
 	if (dev->nreaders + dev->nwriters == 0) {
 		kfree(dev->buffer);
-		dev->buffer = NULL; /* the other fields are not checked on open */
+		dev->buffer =
+			NULL; /* the other fields are not checked on open */
 	}
 	up(&dev->sem);
 	return 0;
@@ -105,8 +97,8 @@ static int scull_p_release(struct inode *inode, struct file *filp)
 /*
  * Data management: read and write
  */
-static ssize_t scull_p_read (struct file *filp, char __user *buf, size_t count,
-                loff_t *f_pos)
+static ssize_t scull_p_read(struct file *filp, char __user *buf, size_t count,
+			    loff_t *f_pos)
 {
 	struct scull_pipe *dev = filp->private_data;
 
@@ -130,17 +122,17 @@ static ssize_t scull_p_read (struct file *filp, char __user *buf, size_t count,
 	else /* the write pointer has wrapped, return data up to dev->end */
 		count = min(count, (size_t)(dev->end - dev->rp));
 	if (copy_to_user(buf, dev->rp, count)) {
-		up (&dev->sem);
+		up(&dev->sem);
 		return -EFAULT;
 	}
 	dev->rp += count;
 	if (dev->rp == dev->end)
 		dev->rp = dev->buffer; /* wrapped */
-	up (&dev->sem);
+	up(&dev->sem);
 
 	/* finally, awake any writers and return */
 	wake_up_interruptible(&dev->outq);
-	PDEBUG("\"%s\" did read %li bytes\n",current->comm, (long)count);
+	PDEBUG("\"%s\" did read %li bytes\n", current->comm, (long)count);
 	return count;
 }
 
@@ -154,7 +146,7 @@ static int scull_getwritespace(struct scull_pipe *dev, struct file *filp)
 		up(&dev->sem);
 		if (filp->f_flags & O_NONBLOCK)
 			return -EAGAIN;
-		PDEBUG("\"%s\" writing: going to sleep\n",current->comm);
+		PDEBUG("\"%s\" writing: going to sleep\n", current->comm);
 		prepare_to_wait(&dev->outq, &wait, TASK_INTERRUPTIBLE);
 		if (spacefree(dev) == 0)
 			schedule();
@@ -175,8 +167,8 @@ static int spacefree(struct scull_pipe *dev)
 	return ((dev->rp + dev->buffersize - dev->wp) % dev->buffersize) - 1;
 }
 
-static ssize_t scull_p_write(struct file *filp, const char __user *buf, size_t count,
-                loff_t *f_pos)
+static ssize_t scull_p_write(struct file *filp, const char __user *buf,
+			     size_t count, loff_t *f_pos)
 {
 	struct scull_pipe *dev = filp->private_data;
 	int result;
@@ -192,12 +184,14 @@ static ssize_t scull_p_write(struct file *filp, const char __user *buf, size_t c
 	/* ok, space is there, accept something */
 	count = min(count, (size_t)spacefree(dev));
 	if (dev->wp >= dev->rp)
-		count = min(count, (size_t)(dev->end - dev->wp)); /* to end-of-buf */
+		count = min(count,
+			    (size_t)(dev->end - dev->wp)); /* to end-of-buf */
 	else /* the write pointer has wrapped, fill up to rp-1 */
 		count = min(count, (size_t)(dev->rp - dev->wp - 1));
-	PDEBUG("Going to accept %li bytes to %p from %p\n", (long)count, dev->wp, buf);
+	PDEBUG("Going to accept %li bytes to %p from %p\n", (long)count,
+	       dev->wp, buf);
 	if (copy_from_user(dev->wp, buf, count)) {
-		up (&dev->sem);
+		up(&dev->sem);
 		return -EFAULT;
 	}
 	dev->wp += count;
@@ -206,12 +200,12 @@ static ssize_t scull_p_write(struct file *filp, const char __user *buf, size_t c
 	up(&dev->sem);
 
 	/* finally, awake any reader */
-	wake_up_interruptible(&dev->inq);  /* blocked in read() and select() */
+	wake_up_interruptible(&dev->inq); /* blocked in read() and select() */
 
 	/* and signal asynchronous readers, explained late in chapter 5 */
 	if (dev->async_queue)
 		kill_fasync(&dev->async_queue, SIGIO, POLL_IN);
-	PDEBUG("\"%s\" did write %li bytes\n",current->comm, (long)count);
+	PDEBUG("\"%s\" did write %li bytes\n", current->comm, (long)count);
 	return count;
 }
 
@@ -226,12 +220,12 @@ static __poll_t scull_p_poll(struct file *filp, struct poll_table_struct *wait)
 	 * two are equal.
 	 */
 	down(&dev->sem);
-	poll_wait(filp, &dev->inq,  wait);
+	poll_wait(filp, &dev->inq, wait);
 	poll_wait(filp, &dev->outq, wait);
 	if (dev->rp != dev->wp)
-		mask |= POLLIN | POLLRDNORM;	/* readable */
+		mask |= POLLIN | POLLRDNORM; /* readable */
 	if (spacefree(dev))
-		mask |= POLLOUT | POLLWRNORM;	/* writable */
+		mask |= POLLOUT | POLLWRNORM; /* writable */
 	up(&dev->sem);
 
 	return mask;
@@ -248,62 +242,62 @@ static int scull_p_fasync(int fd, struct file *filp, int mode)
 
 static void *scull_p_seq_start(struct seq_file *s, loff_t *pos)
 {
-    if (*pos >= scull_p_nr_devs)
-        return NULL;
-    return (scull_p_devices + *pos);
+	if (*pos >= scull_p_nr_devs)
+		return NULL;
+	return (scull_p_devices + *pos);
 }
 
 static void *scull_p_seq_next(struct seq_file *s, void *v, loff_t *pos)
 {
-    (*pos)++;
-    if (*pos >= scull_p_nr_devs)
-        return NULL;
-    return (scull_p_devices + *pos);
+	(*pos)++;
+	if (*pos >= scull_p_nr_devs)
+		return NULL;
+	return (scull_p_devices + *pos);
 }
 
 static void scull_p_seq_stop(struct seq_file *s, void *v)
 {
-    return;
+	return;
 }
 
 static int scull_p_seq_show(struct seq_file *s, void *v)
 {
-
 	int i;
-	struct scull_pipe *p = (struct scull_pipe *) v;
+	struct scull_pipe *p = (struct scull_pipe *)v;
 
 	seq_printf(s, "Default buffersize is %i\n", scull_p_buffer);
-    if (down_interruptible(&p->sem))
-        return -ERESTARTSYS;
+	if (down_interruptible(&p->sem))
+		return -ERESTARTSYS;
 
-    seq_printf(s, "\nDevice %i: %p\n", i, p);
-    seq_printf(s, "   Buffer: %p to %p (%i bytes)\n", p->buffer, p->end, p->buffersize);
-    /* seq_printf(s, "   Queues: %p %p\n", p->inq, p->outq); */
-    seq_printf(s, "   rp %p   wp %p\n", p->rp, p->wp);
-    seq_printf(s, "   readers %i   writers %i\n", p->nreaders, p->nwriters);
+	seq_printf(s, "\nDevice %i: %p\n", i, p);
+	seq_printf(s, "   Buffer: %p to %p (%i bytes)\n", p->buffer, p->end,
+		   p->buffersize);
+	/* seq_printf(s, "   Queues: %p %p\n", p->inq, p->outq); */
+	seq_printf(s, "   rp %p   wp %p\n", p->rp, p->wp);
+	seq_printf(s, "   readers %i   writers %i\n", p->nreaders, p->nwriters);
 
-    up(&p->sem);
+	up(&p->sem);
 
-    return 0;
+	return 0;
 }
 
 static const struct seq_operations scull_seq_ops = {
-    .start = scull_p_seq_start,
-    .next = scull_p_seq_next,
-    .stop = scull_p_seq_stop,
-    .show = scull_p_seq_show
+	.start = scull_p_seq_start,
+	.next = scull_p_seq_next,
+	.stop = scull_p_seq_stop,
+	.show = scull_p_seq_show,
 };
 
 static int scull_p_proc_open(struct inode *inode, struct file *file)
 {
-    return seq_open(file, &scull_seq_ops);
+	return seq_open(file, &scull_seq_ops);
 }
 
 static const struct proc_ops scull_proc_ops = {
-    .proc_open = scull_p_proc_open,
-    .proc_read = seq_read,
-    .proc_lseek = seq_lseek,
-    .proc_release = seq_release
+	.proc_open = scull_p_proc_open,
+	.proc_read = seq_read,
+	.proc_lseek = seq_lseek,
+	.proc_release = seq_release,
 };
 
 /* proc entry pointer, see scull_p_create_proc() and scull_p_remove_proc(). */
@@ -314,7 +308,7 @@ static struct proc_dir_entry *entry = NULL;
  */
 static void scull_p_create_proc(void)
 {
-    entry = proc_create("scullpseq", 0, NULL, &scull_proc_ops);
+	entry = proc_create("scullpseq", 0, NULL, &scull_proc_ops);
 }
 
 static void scull_p_remove_proc(void)
@@ -334,23 +328,25 @@ long scull_p_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	 * extract the type and number bitfields, and don't decode
 	 * wrong cmds: return ENOTTY (inappropriate ioctl) before access_ok()
 	 */
-	if (_IOC_TYPE(cmd) != SCULL_IOC_MAGIC) return -ENOTTY;
-	if (_IOC_NR(cmd) > SCULL_IOC_MAXNR) return -ENOTTY;
+	if (_IOC_TYPE(cmd) != SCULL_IOC_MAGIC)
+		return -ENOTTY;
+	if (_IOC_NR(cmd) > SCULL_IOC_MAXNR)
+		return -ENOTTY;
 
-    /*
+	/*
      * See https://github.com/torvalds/linux/commit/96d4f267e40f9509e8a66e2b39e8b95655617693#diff-9efdd363c29c5e515e7631680a121c71434f8921c1c481ff7c4a212cf35d83bd
      * for explanation of the change to the access check.
      */
-    if (!access_ok((void __user *)arg, _IOC_SIZE(cmd)))
-	    return -EFAULT;
+	if (!access_ok((void __user *)arg, _IOC_SIZE(cmd)))
+		return -EFAULT;
 
-	switch(cmd) {
-	  case SCULL_P_IOCTSIZE:
+	switch (cmd) {
+	case SCULL_P_IOCTSIZE:
 		scull_p_buffer = arg;
 		break;
-	  case SCULL_P_IOCQSIZE:
+	case SCULL_P_IOCQSIZE:
 		return scull_p_buffer;
-	  default:  /* redundant, as cmd was checked against MAXNR */
+	default: /* redundant, as cmd was checked against MAXNR */
 		return -ENOTTY;
 	}
 
@@ -358,15 +354,15 @@ long scull_p_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 }
 
 static struct file_operations scull_pipe_fops = {
-	.owner          = THIS_MODULE,
-	.read           = scull_p_read,
-	.write          = scull_p_write,
+	.owner = THIS_MODULE,
+	.read = scull_p_read,
+	.write = scull_p_write,
 	.unlocked_ioctl = scull_p_ioctl,
-    .poll           = scull_p_poll,
-    .fasync         = scull_p_fasync,
-    .llseek         = no_llseek,
-	.open           = scull_p_open,
-	.release        = scull_p_release
+	.poll = scull_p_poll,
+	.fasync = scull_p_fasync,
+	.llseek = no_llseek,
+	.open = scull_p_open,
+	.release = scull_p_release,
 };
 
 /*
@@ -380,7 +376,7 @@ void scull_p_cleanup_module(void)
 	dev_t devno = MKDEV(scull_p_major, scull_p_minor);
 
 #ifdef SCULL_P_DEBUG
-    scull_p_remove_proc();
+	scull_p_remove_proc();
 #endif
 
 	if (!scull_p_devices)
@@ -404,7 +400,7 @@ static void scull_p_setup_cdev(struct scull_pipe *dev, int index)
 
 	cdev_init(&dev->cdev, &scull_pipe_fops);
 	dev->cdev.owner = THIS_MODULE;
-    dev->cdev.ops = &scull_pipe_fops;
+	dev->cdev.ops = &scull_pipe_fops;
 	err = cdev_add(&dev->cdev, devno, 1);
 
 	/* Fail gracefully if need be */
@@ -417,7 +413,7 @@ int scull_p_init_module(void)
 	int result, i;
 	dev_t dev = 0;
 
-    /*
+	/*
      * Get a range of minor numbers to work with, asking for a dynamic
      * major unless directed otherwise at load time.
      */
@@ -425,19 +421,21 @@ int scull_p_init_module(void)
 		dev = MKDEV(scull_p_major, scull_p_minor);
 		result = register_chrdev_region(dev, scull_p_nr_devs, "scullp");
 	} else {
-		result = alloc_chrdev_region(&dev, scull_p_minor, scull_p_nr_devs,
-				"scullp");
+		result = alloc_chrdev_region(&dev, scull_p_minor,
+					     scull_p_nr_devs, "scullp");
 		scull_p_major = MAJOR(dev);
 	}
 	if (result < 0) {
-		printk(KERN_WARNING "scullp: can't get major %d\n", scull_p_major);
+		printk(KERN_WARNING "scullp: can't get major %d\n",
+		       scull_p_major);
 		return result;
 	}
 
-	scull_p_devices = kmalloc(scull_p_nr_devs * sizeof(struct scull_pipe), GFP_KERNEL);
+	scull_p_devices = kmalloc(scull_p_nr_devs * sizeof(struct scull_pipe),
+				  GFP_KERNEL);
 	if (!scull_p_devices) {
-        result = -ENOMEM;
-        goto fail;
+		result = -ENOMEM;
+		goto fail;
 	}
 	memset(scull_p_devices, 0, scull_p_nr_devs * sizeof(struct scull_pipe));
 	for (i = 0; i < scull_p_nr_devs; i++) {
@@ -448,12 +446,12 @@ int scull_p_init_module(void)
 	}
 
 #ifdef SCULL_P_DEBUG
-    scull_p_create_proc();
+	scull_p_create_proc();
 #endif
 
-    return 0; /* success */
+	return 0; /* success */
 
-  fail:
+fail:
 	scull_p_cleanup_module();
 	return result;
 }

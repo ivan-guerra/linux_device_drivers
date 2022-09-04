@@ -1,9 +1,14 @@
 /*
- * $Id: hello.c,v 1.5 2004/10/26 03:32:21 corbet Exp $
+ * hello.c - A basic hello world module.
+ *
+ * Credit - "Linux Device Drivers" by Alessandro Rubini and Jonathan Corbet,
+ * published by O'Reilly and Associates.
  */
+
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/moduleparam.h>
+
 MODULE_LICENSE("Dual BSD/GPL");
 
 static char *whom = "world";
@@ -13,10 +18,10 @@ module_param(whom, charp, S_IRUGO);
 
 static __init int hello_init(void)
 {
-    for (int i = 0; i < howmany; ++i)
-        printk("Hello, %s\n", whom);
+	for (int i = 0; i < howmany; ++i)
+		printk("Hello, %s\n", whom);
 
-    return 0;
+	return 0;
 }
 
 static __exit void hello_exit(void)
