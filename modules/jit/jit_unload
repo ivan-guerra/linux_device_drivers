@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# usage: jit_unload
+# This script unloads a jit module previously loaded using the jit_load script.
+
+module="jit"
+
+# Invoke rmmod with all arguments we got.
+/sbin/rmmod $module $* || exit 1

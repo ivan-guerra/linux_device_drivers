@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# usage: jit_load [delay=N]...
+# This script loads the jit module. The script accepts a single parameter which
+# is a delay in jiffies.
+
+module="jit"
+
+# Invoke insmod with all arguments we got and use a pathname, as insmod
+# doesn't look in . by default
+/sbin/insmod ./$module.ko $* || exit 1

@@ -1,4 +1,4 @@
-SUBDIRS = hello scull scullp complete faulty sleepy
+SUBDIRS = hello scull scullp complete faulty sleepy jit
 
 all: subdirs
 
