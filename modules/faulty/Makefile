@@ -6,7 +6,7 @@
 ifeq ($(KERNELRELEASE),)
 
 	# Set KERNELDIR to point to the kernel object directory.
-    KERNELDIR ?= $(HOME)/dev/linux_driver_dev/bin/obj
+    KERNELDIR ?= $(KERNEL_OBJ_DIR)
     # The current directory is passed to sub-makes as argument
     PWD := $(shell pwd)
 
