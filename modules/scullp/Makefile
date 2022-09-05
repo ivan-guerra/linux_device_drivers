@@ -1,9 +1,3 @@
-# To build modules outside of the kernel tree, we run "make"
-# in the kernel source tree; the Makefile these then includes this
-# Makefile once again.
-# This conditional selects whether we are being included from the
-# kernel Makefile or not.
-
 # Comment/uncomment the following line to disable/enable debugging.
 DEBUG = y
 

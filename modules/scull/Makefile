@@ -1,16 +1,10 @@
-# To build modules outside of the kernel tree, we run "make"
-# in the kernel source tree; the Makefile these then includes this
-# Makefile once again.
-# This conditional selects whether we are being included from the
-# kernel Makefile or not.
-
 # Comment/uncomment the following line to disable/enable debugging.
 DEBUG = y
 
 # Add your debugging flag (or not) to ccflags. For details see
 # linux/Documentation/kbuild/modules.rst
 ifeq ($(DEBUG),y)
-	DEBFLAGS = -O -g -DSCULL_DEBUG
+	DEBFLAGS = -O -g -DSCULL_P_DEBUG
 else
 	DEBFLAGS = -O2
 endif
@@ -35,6 +29,6 @@ clean:
 .PHONY: modules modules_install clean
 
 else
-    # called from kernel build system: just declare what our modules are
-    obj-m := scull.o
+	# called from kernel build system: just declare what our modules are
+	obj-m	:= scull.o
 endif
