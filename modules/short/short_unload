@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# usage: short_unload
+# This script unloads short devices previously loaded using the short_load
+# script.
+
+module="short"
+device="short"
+
+# Invoke rmmod with all arguments we got.
+/sbin/rmmod $module $* || exit 1
+
+# Remove stale nodes.
+rm -f /dev/${device}[0-7] /dev/${device}[0-7][ps]
