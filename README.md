@@ -11,7 +11,7 @@ Included with the project is a set of Docker containers that can be used to
 * Configure and build the Linux kernel
 * Build out-of-tree kernel modules
 
-The containers create the initramfs and kernel bzimage that can be handed off
+The containers create the initramfs and kernel bzImage that can be handed off
 to the QEMU emulator. From within the emulator, we can load/unload our custom
 modules and experiment with LDD3's in memory "devices" from the safety of a
 sandboxed environment.
@@ -34,7 +34,7 @@ you like or remove it completey for the full history.
 ### Building and Running the Examples
 
 To build and run the examples, you will need Docker and QEMU installed on
-your host PC. The steps that follow were run on a Fedora Linux 36 PC with
+your host PC. The steps that follow were run on a Fedora 36 PC with
 Docker v20.10 and QEMU v6.2 installed.
 
 All scripts referenced below can be found under `scripts/`.
