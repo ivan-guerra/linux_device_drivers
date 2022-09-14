@@ -2,7 +2,8 @@
  * short.c - Simple Hardware Operations and Raw Tests
  *
  * The interrupt code included in the original short.c example has been
- * removed here. See modules/shorti for a short driver with interrupt support.
+ * removed here. See modules/shortint for a short driver with interrupt
+ * support.
  *
  * FIXME - This driver is not safe with concurrent readers/writers.
  *

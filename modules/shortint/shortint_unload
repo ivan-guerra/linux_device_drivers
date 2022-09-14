@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# usage: shortint_unload
+# This script unloads shortint devices previously loaded using the
+# shortint_load script.
+
+module="shortint"
+device="shortint"
+
+# Invoke rmmod with all arguments we got.
+/sbin/rmmod $module $* || exit 1
+
+# Remove stale nodes.
+rm -f /dev/${device}

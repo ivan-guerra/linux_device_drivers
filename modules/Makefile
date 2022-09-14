@@ -1,5 +1,5 @@
 SUBDIRS = hello scull scullp scullc scullpg scullv complete faulty sleepy jit \
-          short silly
+          short shortint silly
 
 all: subdirs
 

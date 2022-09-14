@@ -1,0 +1,20 @@
+#!/bin/sh
+
+module="shortint"
+device="shortint"
+mode="664"
+
+# Invoke insmod with all arguments we got and use a pathname, as insmod
+# doesn't look in . by default
+/sbin/insmod ./$module.ko $* || exit 1
+
+# Retrieve major number.
+# The awk command given in ldd3 book is buggy. The command below works and was
+# taken from https://stackoverflow.com/questions/13951598/meaning-of-this-shell-script-line-with-awk
+major=$(awk -v mod=$module '$2==mod{print $1}' /proc/devices)
+
+# Create 8 entry points, as SHORT_NR_PORTS is 8 by default
+rm -f /dev/${device}
+mknod /dev/${device} c $major 128
+
+chmod $mode /dev/${device}
