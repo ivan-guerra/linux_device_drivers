@@ -1,5 +1,5 @@
 SUBDIRS = hello scull scullp scullc scullpg scullv complete faulty sleepy jit \
-          short shortint silly
+          short shortint silly kdatasize kdataalign
 
 all: subdirs
 
