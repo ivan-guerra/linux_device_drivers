@@ -1,9 +1,10 @@
 # Linux Device Drivers 3rd Edition
 
-This project contains the example modules introduced throughout the Linux
-Device Drivers 3rd edition text. LDD3 examples are meant to be compatible with
-Linux Kernel v2.6. This project uses kernel v5.19. Examples have been updated
-to work with the newer kernel's updated interfaces.
+This project contains a subset of the example modules introduced throughout the
+[Linux Device Drivers 3rd edition](https://lwn.net/Kernel/LDD3/) text.
+LDD3 examples are meant to be compatible with Linux Kernel v2.6. This project
+uses kernel v5.19. Modernized sources for the modules found in Chapters 1-12
+are provided.
 
 Included with the project is a set of Docker containers that can be used to
 
