@@ -1,3 +1,3 @@
-[submodule "linux-next"]
+[submodule "linux"]
 	path = linux
-	url = https://kernel.googlesource.com/pub/scm/linux/kernel/git/next/linux-next.git
+	url = git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
